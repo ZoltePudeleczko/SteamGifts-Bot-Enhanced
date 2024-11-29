@@ -1,14 +1,10 @@
-import sys
-import configparser
 import requests
 import json
-import threading
 
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 from time import sleep
 from random import randint
-from requests import RequestException
 from bs4 import BeautifulSoup
 
 from cli import log
@@ -16,9 +12,7 @@ from cli import log
 
 class SteamGifts:
     def __init__(self, cookie, gifts_type, pinned, min_points):
-        self.cookie = {
-            'PHPSESSID': cookie
-        }
+        self.cookie = {"PHPSESSID": cookie}
         self.gifts_type = gifts_type
         self.pinned = pinned
         self.min_points = int(min_points)
@@ -27,19 +21,15 @@ class SteamGifts:
         self.session = requests.Session()
 
         self.filter_url = {
-            'All': "search?page=%d",
-            'Wishlist': "search?page=%d&type=wishlist",
-            'Recommended': "search?page=%d&type=recommended",
-            'Copies': "search?page=%d&copy_min=2",
-            'DLC': "search?page=%d&dlc=true",
-            'New': "search?page=%d&type=new"
+            "All": "search?page=%d",
+            "Wishlist": "search?page=%d&type=wishlist",
+            "Recommended": "search?page=%d&type=recommended",
+            "Copies": "search?page=%d&copy_min=2",
+            "DLC": "search?page=%d&dlc=true",
+            "New": "search?page=%d&type=new",
         }
 
-    def requests_retry_session(
-        self,
-        retries=5,
-        backoff_factor=0.3
-    ):
+    def requests_retry_session(self, retries=5, backoff_factor=0.3):
         session = self.session or requests.Session()
         retry = Retry(
             total=retries,
@@ -49,22 +39,24 @@ class SteamGifts:
             status_forcelist=(500, 502, 504),
         )
         adapter = HTTPAdapter(max_retries=retry)
-        session.mount('http://', adapter)
-        session.mount('https://', adapter)
+        session.mount("http://", adapter)
+        session.mount("https://", adapter)
         return session
 
     def get_soup_from_page(self, url):
         r = self.requests_retry_session().get(url)
         r = requests.get(url, cookies=self.cookie)
-        soup = BeautifulSoup(r.text, 'html.parser')
+        soup = BeautifulSoup(r.text, "html.parser")
         return soup
 
     def update_info(self):
         soup = self.get_soup_from_page(self.base)
 
         try:
-            self.xsrf_token = soup.find('input', {'name': 'xsrf_token'})['value']
-            self.points = int(soup.find('span', {'class': 'nav__points'}).text)  # storage points
+            self.xsrf_token = soup.find("input", {"name": "xsrf_token"})["value"]
+            self.points = int(
+                soup.find("span", {"class": "nav__points"}).text
+            )  # storage points
         except TypeError:
             log("⛔  Cookie is not valid.", "red")
             sleep(10)
@@ -81,7 +73,7 @@ class SteamGifts:
 
             soup = self.get_soup_from_page(paginated_url)
 
-            game_list = soup.find_all('div', {'class': 'giveaway__row-inner-wrap'})
+            game_list = soup.find_all("div", {"class": "giveaway__row-inner-wrap"})
 
             if not len(game_list):
                 log("⛔  Page is empty. Please, select another type.", "red")
@@ -89,7 +81,7 @@ class SteamGifts:
                 exit()
 
             for item in game_list:
-                if len(item.get('class', [])) == 2 and not self.pinned:
+                if len(item.get("class", [])) == 2 and not self.pinned:
                     continue
 
                 if self.points == 0 or self.points < self.min_points:
@@ -99,14 +91,21 @@ class SteamGifts:
                     self.start()
                     break
 
-                game_cost = item.find_all('span', {'class': 'giveaway__heading__thin'})[-1]
+                game_cost = item.find_all("span", {"class": "giveaway__heading__thin"})[
+                    -1
+                ]
 
                 if game_cost:
-                    game_cost = game_cost.getText().replace('(', '').replace(')', '').replace('P', '')
+                    game_cost = (
+                        game_cost.getText()
+                        .replace("(", "")
+                        .replace(")", "")
+                        .replace("P", "")
+                    )
                 else:
                     continue
 
-                game_name = item.find('a', {'class': 'giveaway__heading__name'}).text
+                game_name = item.find("a", {"class": "giveaway__heading__name"}).text
 
                 if self.points - int(game_cost) < 0:
                     txt = f"⛔ Not enough points to enter: {game_name}"
@@ -114,7 +113,9 @@ class SteamGifts:
                     continue
 
                 elif self.points - int(game_cost) >= 0:
-                    game_id = item.find('a', {'class': 'giveaway__heading__name'})['href'].split('/')[2]
+                    game_id = item.find("a", {"class": "giveaway__heading__name"})[
+                        "href"
+                    ].split("/")[2]
                     res = self.entry_gift(game_id)
                     if res:
                         self.points -= int(game_cost)
@@ -122,19 +123,20 @@ class SteamGifts:
                         log(txt, "green")
                         sleep(randint(3, 7))
 
-            n = n+1
-
+            n = n + 1
 
         log("🛋️  List of games is ended. Waiting 2 mins to update...", "yellow")
         sleep(120)
         self.start()
 
     def entry_gift(self, game_id):
-        payload = {'xsrf_token': self.xsrf_token, 'do': 'entry_insert', 'code': game_id}
-        entry = requests.post('https://www.steamgifts.com/ajax.php', data=payload, cookies=self.cookie)
+        payload = {"xsrf_token": self.xsrf_token, "do": "entry_insert", "code": game_id}
+        entry = requests.post(
+            "https://www.steamgifts.com/ajax.php", data=payload, cookies=self.cookie
+        )
         json_data = json.loads(entry.text)
 
-        if json_data['type'] == 'success':
+        if json_data["type"] == "success":
             return True
 
     def start(self):
