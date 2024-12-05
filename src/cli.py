@@ -70,6 +70,17 @@ def ask(type, name, message, validate=None, choices=[]):
     return answers
 
 
+def link(uri, label=None):
+    if label is None:
+        label = uri
+    parameters = ""
+
+    # OSC 8 ; params ; URI ST <name> OSC 8 ;; ST
+    escape_mask = "\033]8;{};{}\033\\{}\033]8;;\033\\"
+
+    return escape_mask.format(parameters, uri, label)
+
+
 def run():
     from main import SteamGifts as SG
 
@@ -86,8 +97,18 @@ def run():
         return cookie["cookie"]
 
     log("SteamGifts Bot", color="blue", figlet=True)
-    log("Welcome to SteamGifts Bot!", "green")
+    log(
+        "Welcome to "
+        + link("https://github.com/ZoltePudeleczko/steamgifts-bot", "SteamGifts Bot")
+        + "!",
+        "green",
+    )
     log("Created by: github.com/stilManiac", "white")
+    log(
+        "Enhanced by: "
+        + link("https://github.com/ZoltePudeleczko", "github.com/ZoltePudeleczko"),
+        "white",
+    )
 
     config.read("config.ini")
     if not config["DEFAULT"].get("cookie"):
