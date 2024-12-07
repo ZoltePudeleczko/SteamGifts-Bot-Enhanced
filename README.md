@@ -1,6 +1,6 @@
 # SteamGifts Bot + Enhanced
 
-Original version developed by [stilManiac](https://github.com/stillManiac) can be found [here](https://github.com/stilManiac/steamgifts-bot) - Thanks for the great work!
+Original version developed by [stilManiac](https://github.com/stilManiac) can be found [here](https://github.com/stilManiac/steamgifts-bot) - Thanks for the great work!
 
 [![release](https://img.shields.io/github/v/release/ZoltePudeleczko/SteamGifts-Bot-Enhanced)](https://github.com/ZoltePudeleczko/SteamGifts-Bot-Enhanced/releases)
 [![build-executables](https://github.com/ZoltePudeleczko/SteamGifts-Bot-Enhanced/actions/workflows/build-executables.yml/badge.svg?branch=master)](https://github.com/ZoltePudeleczko/SteamGifts-Bot-Enhanced/actions/workflows/build-executables.yml)
