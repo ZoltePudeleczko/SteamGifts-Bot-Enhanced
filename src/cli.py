@@ -96,10 +96,13 @@ def run():
             config.write(configfile)
         return cookie["cookie"]
 
-    log("SteamGifts Bot", color="blue", figlet=True)
+    log("SteamGifts Bot+", color="blue", figlet=True)
     log(
         "Welcome to "
-        + link("https://github.com/ZoltePudeleczko/steamgifts-bot", "SteamGifts Bot")
+        + link(
+            "https://github.com/ZoltePudeleczko/SteamGifts-Bot-Enhanced",
+            "SteamGifts Bot + Enhanced",
+        )
         + "!",
         "green",
     )
