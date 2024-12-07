@@ -35,7 +35,7 @@ jobs:
         uses: Nuitka/Nuitka-Action@main
         with:
           nuitka-version: main
-          script-name: cli
+          script-name: src/cli.py
           mode: app
 
       - name: Upload Artifacts
