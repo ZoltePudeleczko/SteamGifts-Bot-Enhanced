@@ -24,13 +24,13 @@ class SteamGifts:
         self.session = requests.Session()
 
         self.filter_url = {
-            "All": "search?page=%d",
-            "Wishlist": "search?page=%d&type=wishlist",
-            "Recommended": "search?page=%d&type=recommended",
-            "Copies": "search?page=%d&copy_min=2",
-            "DLC": "search?page=%d&dlc=true",
-            "Group": "search?page=%d&type=group",
-            "New": "search?page=%d&type=new",
+            "All": "search?page={}&point_max={}",
+            "Wishlist": "search?page={}&type=wishlist&point_max={}",
+            "Recommended": "search?page={}&type=recommended&point_max={}",
+            "Copies": "search?page={}&copy_min=2&point_max={}",
+            "DLC": "search?page={}&dlc=true&point_max={}",
+            "Group": "search?page={}&type=group&point_max={}",
+            "New": "search?page={}&type=new&point_max={}",
         }
 
     def requests_retry_session(self, retries=5, backoff_factor=0.3):
@@ -95,7 +95,7 @@ class SteamGifts:
         while True:
             log(f"⚙️ Retrieving games from page {n}...", "magenta")
 
-            filtered_url = self.filter_url[self.gifts_type] % n
+            filtered_url = self.filter_url[self.gifts_type].format(n, self.points)
             paginated_url = f"{self.base}/giveaways/{filtered_url}"
 
             soup = self.get_soup_from_page(paginated_url)
@@ -105,6 +105,7 @@ class SteamGifts:
                 for item in soup.find_all("div", {"class": "giveaway__row-inner-wrap"})
                 if len(item.get("class", [])) != 2 or self.pinned
             ]
+
             if not len(game_list):
                 break
             else:
@@ -135,7 +136,10 @@ class SteamGifts:
 
             n = n + 1
 
-        log("🛋️ No more games found. Waiting 2 mins to update...", "yellow")
+        log(
+            "🛋️ No more games that can be entered found. Waiting 2 mins to update...",
+            "yellow",
+        )
         sleep(SLEEP_TIME_NO_GAMES)
         self.start()
 

@@ -79,21 +79,7 @@ def link(uri, label=None):
     return escape_mask.format(parameters, uri, label)
 
 
-def run():
-    from main import SteamGifts as SG
-
-    def askCookie():
-        cookie = ask(
-            type="input",
-            name="cookie",
-            message="Enter PHPSESSID cookie (Only needed to provide once):",
-        )
-        config["DEFAULT"]["cookie"] = cookie["cookie"]
-
-        with open("config.ini", "w") as configfile:
-            config.write(configfile)
-        return cookie["cookie"]
-
+def write_welcome_message():
     log("SteamGifts Bot+", color="blue", figlet=True)
     log(
         "Welcome to "
@@ -110,6 +96,24 @@ def run():
         + link("https://github.com/ZoltePudeleczko", "github.com/ZoltePudeleczko"),
         "white",
     )
+
+
+def run():
+    from main import SteamGifts as SG
+
+    def askCookie():
+        cookie = ask(
+            type="input",
+            name="cookie",
+            message="Enter PHPSESSID cookie:",
+        )
+        config["DEFAULT"]["cookie"] = cookie["cookie"]
+
+        with open("config.ini", "w") as configfile:
+            config.write(configfile)
+        return cookie["cookie"]
+
+    write_welcome_message()
 
     config.read("config.ini")
     if not config["DEFAULT"].get("cookie"):
