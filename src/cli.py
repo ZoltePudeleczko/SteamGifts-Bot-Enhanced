@@ -74,8 +74,6 @@ def link(uri, label=None):
     if label is None:
         label = uri
     parameters = ""
-
-    # OSC 8 ; params ; URI ST <name> OSC 8 ;; ST
     escape_mask = "\033]8;{};{}\033\\{}\033]8;;\033\\"
 
     return escape_mask.format(parameters, uri, label)
@@ -133,7 +131,7 @@ def run():
         type="list",
         name="gift_type",
         message="Select type:",
-        choices=["All", "Wishlist", "Recommended", "Copies", "DLC", "New"],
+        choices=["All", "Wishlist", "Recommended", "Copies", "DLC", "Group", "New"],
     )["gift_type"]
 
     min_points = ask(
