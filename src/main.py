@@ -62,7 +62,7 @@ class SteamGifts:
                 soup.find("span", {"class": "nav__points"}).text
             )  # storage points
         except TypeError:
-            log("⛔  Cookie is not valid.", "red")
+            log("⛔ Cookie is not valid.", "red")
             sleep(SLEEP_TIME)
             exit()
 
@@ -93,7 +93,7 @@ class SteamGifts:
     def get_game_content(self, page=1):
         n = page
         while True:
-            log(f"⚙️ Retrieving games from page {n}.", "magenta")
+            log(f"⚙️ Retrieving games from page {n}...", "magenta")
 
             filtered_url = self.filter_url[self.gifts_type] % n
             paginated_url = f"{self.base}/giveaways/{filtered_url}"

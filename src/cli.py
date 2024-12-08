@@ -115,13 +115,16 @@ def run():
     if not config["DEFAULT"].get("cookie"):
         cookie = askCookie()
     else:
+        current_cookie = config["DEFAULT"].get("cookie")
         re_enter_cookie = ask(
-            type="confirm", name="reenter", message="Do you want to enter new cookie?"
+            type="confirm",
+            name="reenter",
+            message=f"Current cookie: {current_cookie}\nDo you want to enter new cookie?",
         )["reenter"]
         if re_enter_cookie:
             cookie = askCookie()
         else:
-            cookie = config["DEFAULT"].get("cookie")
+            cookie = current_cookie
 
     pinned_games = ask(
         type="confirm", name="pinned", message="Should bot enter pinned games?"
