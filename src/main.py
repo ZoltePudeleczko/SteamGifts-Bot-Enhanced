@@ -82,7 +82,7 @@ class SteamGifts:
         return game_cost, game_name, game_id
 
     def sleep_if_not_enough_points(self):
-        if self.points == 0 or self.points < self.min_points:
+        if self.points < self.min_points:
             log(
                 f"🛋️ Sleeping to get more points. We have {self.points} points, but we need {self.min_points} to start.",
                 "yellow",
@@ -90,35 +90,35 @@ class SteamGifts:
             sleep(SLEEP_TIME_NO_POINTS)
             self.start()
 
+    def get_games_list(self, page):
+        paginated_url = f"{self.base}/giveaways/{self.filter_url[self.gifts_type].format(n, self.points)}"
+        soup = self.get_soup_from_page(paginated_url)
+
+        return [
+            item
+            for item in soup.find_all("div", {"class": "giveaway__row-inner-wrap"})
+            if len(item.get("class", [])) != 2 or self.pinned
+        ]
+
     def get_game_content(self, page=1):
         n = page
         while True:
             log(f"⚙️ Retrieving games from page {n}...", "magenta")
+            games_list = self.get_games_list(page)
 
-            filtered_url = self.filter_url[self.gifts_type].format(n, self.points)
-            paginated_url = f"{self.base}/giveaways/{filtered_url}"
-
-            soup = self.get_soup_from_page(paginated_url)
-
-            game_list = [
-                item
-                for item in soup.find_all("div", {"class": "giveaway__row-inner-wrap"})
-                if len(item.get("class", [])) != 2 or self.pinned
-            ]
-
-            if not len(game_list):
+            if not len(games_list):
                 break
             else:
-                log(f"🎁 Found {len(game_list)} games on page {n}.", "green")
+                log(f"🎁 Found {len(games_list)} games on page {n}.", "green")
 
-            for item in game_list:
+            for item in games_list:
                 self.sleep_if_not_enough_points()
 
                 game_cost, game_name, game_id = self.get_game_info(item)
 
                 if self.points - game_cost < 0:
                     log(
-                        f"⛔ Not enough points to enter: {game_name} ({game_cost} points needed)",
+                        f"⛔ Not enough points to enter: {game_name} ({game_cost} points needed), ignoring",
                         "red",
                     )
                     continue
@@ -131,16 +131,17 @@ class SteamGifts:
                         )
                         sleep(SLEEP_TIME)
                     else:
-                        log(f"⛔ Failed to enter {game_name}.", "red")
+                        log(f"⛔ Failed to enter {game_name}", "red")
                         sleep(SLEEP_TIME)
 
             n = n + 1
 
-        log(
-            "🛋️ No more games that can be entered found. Waiting 2 mins to update...",
-            "yellow",
-        )
-        sleep(SLEEP_TIME_NO_GAMES)
+        if len(self.get_games_list(1)) > 0:
+            self.get_game_content()
+        else:
+            log("🛋️ No more games to enter. Sleeping for a while.", "yellow")
+            sleep(SLEEP_TIME_NO_GAMES)
+
         self.start()
 
     def entry_gift(self, game_id):
