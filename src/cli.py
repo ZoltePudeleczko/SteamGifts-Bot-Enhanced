@@ -90,10 +90,18 @@ def write_welcome_message():
         + "!",
         "green",
     )
+    log(
+        "Check for updates at "
+        + link(
+            "https://github.com/ZoltePudeleczko/SteamGifts-Bot-Enhanced/releases",
+            "github.com/ZoltePudeleczko/SteamGifts-Bot-Enhanced/releases\n",
+        ),
+        "green",
+    )
     log("Created by: github.com/stilManiac", "white")
     log(
         "Enhanced by: "
-        + link("https://github.com/ZoltePudeleczko", "github.com/ZoltePudeleczko"),
+        + link("https://github.com/ZoltePudeleczko", "github.com/ZoltePudeleczko\n"),
         "white",
     )
 

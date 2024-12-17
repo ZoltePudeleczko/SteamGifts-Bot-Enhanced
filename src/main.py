@@ -91,7 +91,7 @@ class SteamGifts:
             self.start()
 
     def get_games_list(self, page):
-        paginated_url = f"{self.base}/giveaways/{self.filter_url[self.gifts_type].format(n, self.points)}"
+        paginated_url = f"{self.base}/giveaways/{self.filter_url[self.gifts_type].format(page, self.points)}"
         soup = self.get_soup_from_page(paginated_url)
 
         return [
@@ -139,7 +139,7 @@ class SteamGifts:
         if len(self.get_games_list(1)) > 0:
             self.get_game_content()
         else:
-            log("🛋️ No more games to enter. Sleeping for a while.", "yellow")
+            log("🛋️ No more games to enter. Sleeping for a while...", "yellow")
             sleep(SLEEP_TIME_NO_GAMES)
 
         self.start()
