@@ -74,28 +74,12 @@ def link(uri, label=None):
     if label is None:
         label = uri
     parameters = ""
-
-    # OSC 8 ; params ; URI ST <name> OSC 8 ;; ST
     escape_mask = "\033]8;{};{}\033\\{}\033]8;;\033\\"
 
     return escape_mask.format(parameters, uri, label)
 
 
-def run():
-    from main import SteamGifts as SG
-
-    def askCookie():
-        cookie = ask(
-            type="input",
-            name="cookie",
-            message="Enter PHPSESSID cookie (Only needed to provide once):",
-        )
-        config["DEFAULT"]["cookie"] = cookie["cookie"]
-
-        with open("config.ini", "w") as configfile:
-            config.write(configfile)
-        return cookie["cookie"]
-
+def write_welcome_message():
     log("SteamGifts Bot+", color="blue", figlet=True)
     log(
         "Welcome to "
@@ -106,24 +90,53 @@ def run():
         + "!",
         "green",
     )
+    log(
+        "Check for updates at "
+        + link(
+            "https://github.com/ZoltePudeleczko/SteamGifts-Bot-Enhanced/releases",
+            "github.com/ZoltePudeleczko/SteamGifts-Bot-Enhanced/releases\n",
+        ),
+        "green",
+    )
     log("Created by: github.com/stilManiac", "white")
     log(
         "Enhanced by: "
-        + link("https://github.com/ZoltePudeleczko", "github.com/ZoltePudeleczko"),
+        + link("https://github.com/ZoltePudeleczko", "github.com/ZoltePudeleczko\n"),
         "white",
     )
+
+
+def run():
+    from main import SteamGifts as SG
+
+    def askCookie():
+        cookie = ask(
+            type="input",
+            name="cookie",
+            message="Enter PHPSESSID cookie:",
+        )
+        config["DEFAULT"]["cookie"] = cookie["cookie"]
+
+        with open("config.ini", "w") as configfile:
+            config.write(configfile)
+        return cookie["cookie"]
+
+    write_welcome_message()
 
     config.read("config.ini")
     if not config["DEFAULT"].get("cookie"):
         cookie = askCookie()
     else:
+        current_cookie = config["DEFAULT"].get("cookie")
         re_enter_cookie = ask(
-            type="confirm", name="reenter", message="Do you want to enter new cookie?"
+            type="confirm",
+            name="reenter",
+            message=f"Current cookie: {current_cookie}\nDo you want to enter new cookie?",
         )["reenter"]
         if re_enter_cookie:
             cookie = askCookie()
         else:
-            cookie = config["DEFAULT"].get("cookie")
+            cookie = current_cookie
 
     pinned_games = ask(
         type="confirm", name="pinned", message="Should bot enter pinned games?"
@@ -133,7 +146,7 @@ def run():
         type="list",
         name="gift_type",
         message="Select type:",
-        choices=["All", "Wishlist", "Recommended", "Copies", "DLC", "New"],
+        choices=["All", "Wishlist", "Recommended", "Copies", "DLC", "Group", "New"],
     )["gift_type"]
 
     min_points = ask(
