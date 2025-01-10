@@ -1,4 +1,3 @@
-import six
 import configparser
 
 from pyfiglet import figlet_format
@@ -9,11 +8,11 @@ from PyInquirer import (
     prompt,
     style_from_dict,
 )
-from prompt_toolkit import document
 from termcolor import colored
 
 
 config = configparser.ConfigParser()
+config.read("config.ini")
 
 style = style_from_dict(
     {
@@ -27,13 +26,13 @@ style = style_from_dict(
 
 def log(string, color, font="slant", figlet=False):
     if not figlet:
-        six.print_(colored(string, color))
+        print(colored(string, color))
     else:
-        six.print_(colored(figlet_format(string, font=font), color))
+        print(colored(figlet_format(string, font=font), color))
 
 
 class PointValidator(Validator):
-    def validate(self, document: document.Document):
+    def validate(self, document):
         value = document.text
         try:
             value = int(value)
@@ -106,6 +105,12 @@ def write_welcome_message():
     )
 
 
+def save_config():
+    with open("config.ini", "w") as configfile:
+        config.write(configfile)
+        print("⚙️ Configuration saved.")
+
+
 def run():
     from main import SteamGifts as SG
 
@@ -116,14 +121,39 @@ def run():
             message="Enter PHPSESSID cookie:",
         )
         config["DEFAULT"]["cookie"] = cookie["cookie"]
-
-        with open("config.ini", "w") as configfile:
-            config.write(configfile)
+        save_config()
         return cookie["cookie"]
+
+    def askConfig():
+        pinned_games = ask(
+            type="confirm", name="pinned", message="Should bot enter pinned games?"
+        )["pinned"]
+        config["DEFAULT"]["pinned_games"] = "1" if pinned_games else "0"
+
+        gift_type = ask(
+            type="list",
+            name="gift_type",
+            message="Select type:",
+            choices=["All", "Wishlist", "Recommended", "Copies", "DLC", "Group", "New"],
+        )["gift_type"]
+        config["DEFAULT"]["gift_type"] = gift_type
+
+        min_points = ask(
+            type="input",
+            name="min_points",
+            message="Minimum points to start working (bot will try to enter giveaways until minimum value is reached):",
+            validate=PointValidator,
+        )["min_points"]
+        config["DEFAULT"]["min_points"] = min_points
+
+        save_config()
+        return pinned_games, gift_type, min_points
+
+    def pinned_games_to_string(pinned_games):
+        return "Enter" if pinned_games == "1" else "Ignore"
 
     write_welcome_message()
 
-    config.read("config.ini")
     if not config["DEFAULT"].get("cookie"):
         cookie = askCookie()
     else:
@@ -138,24 +168,22 @@ def run():
         else:
             cookie = current_cookie
 
-    pinned_games = ask(
-        type="confirm", name="pinned", message="Should bot enter pinned games?"
-    )["pinned"]
+    if not config["DEFAULT"].get("pinned_games"):
+        pinned_games, gift_type, min_points = askConfig()
+    else:
+        pinned_games = config["DEFAULT"].get("pinned_games")
+        gift_type = config["DEFAULT"].get("gift_type")
+        min_points = config["DEFAULT"].get("min_points")
 
-    gift_type = ask(
-        type="list",
-        name="gift_type",
-        message="Select type:",
-        choices=["All", "Wishlist", "Recommended", "Copies", "DLC", "Group", "New"],
-    )["gift_type"]
+        re_enter_config = ask(
+            type="confirm",
+            name="reenter",
+            message=f"Current configuration:\nPinned games: {pinned_games_to_string(pinned_games)}\nGift type: {gift_type}\nMinimum points: {min_points}\n\nDo you want to change this configuration?",
+        )["reenter"]
+        if re_enter_config:
+            pinned_games, gift_type, min_points = askConfig()
 
-    min_points = ask(
-        type="input",
-        name="min_points",
-        message="Enter minimum points to start working (bot will try to enter giveaways until minimum value is reached):",
-        validate=PointValidator,
-    )["min_points"]
-
+    print()
     s = SG(cookie, gift_type, pinned_games, min_points)
     s.start()
 
