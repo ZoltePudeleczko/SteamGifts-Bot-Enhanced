@@ -1,4 +1,3 @@
-import six
 import configparser
 
 from pyfiglet import figlet_format
@@ -9,7 +8,6 @@ from PyInquirer import (
     prompt,
     style_from_dict,
 )
-from prompt_toolkit import document
 from termcolor import colored
 
 
@@ -28,13 +26,13 @@ style = style_from_dict(
 
 def log(string, color, font="slant", figlet=False):
     if not figlet:
-        six.print_(colored(string, color))
+        print(colored(string, color))
     else:
-        six.print_(colored(figlet_format(string, font=font), color))
+        print(colored(figlet_format(string, font=font), color))
 
 
 class PointValidator(Validator):
-    def validate(self, document: document.Document):
+    def validate(self, document):
         value = document.text
         try:
             value = int(value)
@@ -107,6 +105,12 @@ def write_welcome_message():
     )
 
 
+def save_config():
+    with open("config.ini", "w") as configfile:
+        config.write(configfile)
+        print("⚙️ Configuration saved.")
+
+
 def run():
     from main import SteamGifts as SG
 
@@ -117,10 +121,7 @@ def run():
             message="Enter PHPSESSID cookie:",
         )
         config["DEFAULT"]["cookie"] = cookie["cookie"]
-
-        with open("config.ini", "w") as configfile:
-            config.write(configfile)
-            print("⚙️ Cookie saved.")
+        save_config()
         return cookie["cookie"]
 
     def askConfig():
@@ -145,9 +146,7 @@ def run():
         )["min_points"]
         config["DEFAULT"]["min_points"] = min_points
 
-        with open("config.ini", "w") as configfile:
-            config.write(configfile)
-            print("⚙️ Configuration saved.")
+        save_config()
         return pinned_games, gift_type, min_points
 
     def pinned_games_to_string(pinned_games):
