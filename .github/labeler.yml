@@ -1,0 +1,12 @@
+bug:
+ - head-branch: ['^bug', 'bug', '^fix', 'fix', 'hotfix', '^hotfix']
+
+feature:
+ - head-branch: ['^feature', 'feature']
+
+release:
+ - base-branch: 'main'
+
+readme:
+  - changed-files:
+    - any-glob-to-any-file: 'README.md'
