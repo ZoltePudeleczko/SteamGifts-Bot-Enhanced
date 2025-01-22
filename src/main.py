@@ -97,7 +97,8 @@ class SteamGifts:
         return [
             item
             for item in soup.find_all("div", {"class": "giveaway__row-inner-wrap"})
-            if len(item.get("class", [])) != 2 or self.pinned
+            if "is-faded" not in item.get("class", [])
+            and (len(item.get("class", [])) != 2 or self.pinned != 0)
         ]
 
     def get_game_content(self, page=1):
