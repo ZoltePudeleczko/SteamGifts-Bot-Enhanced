@@ -5,7 +5,7 @@ feature:
  - head-branch: ['^feature', 'feature']
 
 release:
- - base-branch: 'main'
+ - base-branch: 'master'
 
 readme:
   - changed-files:
