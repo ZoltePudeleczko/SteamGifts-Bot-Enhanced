@@ -14,11 +14,12 @@ SLEEP_TIME_NO_POINTS = 900
 
 
 class SteamGifts:
-    def __init__(self, cookie, gifts_type, pinned, min_points):
+    def __init__(self, cookie, gifts_type, pinned, min_points, ignored_words):
         self.cookie = {"PHPSESSID": cookie}
         self.gifts_type = gifts_type
         self.pinned = pinned
         self.min_points = int(min_points)
+        self.ignored_words = ignored_words
 
         self.base = "https://www.steamgifts.com"
         self.session = requests.Session()
@@ -99,6 +100,13 @@ class SteamGifts:
             for item in soup.find_all("div", {"class": "giveaway__row-inner-wrap"})
             if "is-faded" not in item.get("class", [])
             and (len(item.get("class", [])) != 2 or self.pinned != 0)
+            and not any(
+                [
+                    word.lower()
+                    in item.find("a", {"class": "giveaway__heading__name"}).text.lower
+                    for word in self.ignored_words
+                ]
+            )
         ]
 
     def get_game_content(self, page=1):
@@ -123,17 +131,17 @@ class SteamGifts:
                         "red",
                     )
                     continue
+
+                if self.entry_gift(game_id):
+                    self.points -= game_cost
+                    log(
+                        f"🎉 One more game! Has just entered {game_name} for {game_cost} points. Points left: {self.points}",
+                        "green",
+                    )
+                    sleep(SLEEP_TIME)
                 else:
-                    if self.entry_gift(game_id):
-                        self.points -= game_cost
-                        log(
-                            f"🎉 One more game! Has just entered {game_name} for {game_cost} points. Points left: {self.points}",
-                            "green",
-                        )
-                        sleep(SLEEP_TIME)
-                    else:
-                        log(f"⛔ Failed to enter {game_name}", "red")
-                        sleep(SLEEP_TIME)
+                    log(f"⛔ Failed to enter {game_name}", "red")
+                    sleep(SLEEP_TIME)
 
             n = n + 1
 

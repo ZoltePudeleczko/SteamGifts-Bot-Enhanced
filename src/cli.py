@@ -145,9 +145,18 @@ def run():
             validate=PointValidator,
         )["min_points"]
         config["DEFAULT"]["min_points"] = min_points
-
         save_config()
         return pinned_games, gift_type, min_points
+
+    def askIgnoredWords():
+        ignored_words = ask(
+            type="input",
+            name="ignored_words",
+            message="Enter words that you want to ignore (separated by comma):",
+        )["ignored_words"]
+        config["DEFAULT"]["ignored_words"] = ignored_words
+        save_config()
+        return ignored_words.split(",")
 
     def pinned_games_to_string(pinned_games):
         return "Enter" if pinned_games == "1" else "Ignore"
@@ -168,6 +177,19 @@ def run():
         else:
             cookie = current_cookie
 
+    if not config["DEFAULT"].get("ignored_words"):
+        ignored_words = askIgnoredWords()
+    else:
+        ignored_words = config["DEFAULT"].get("ignored_words").split(",")
+
+        re_enter_ignored_words = ask(
+            type="confirm",
+            name="reenter",
+            message=f"Current ignored words: {ignored_words}\nDo you want to change this configuration?",
+        )["reenter"]
+        if re_enter_ignored_words:
+            ignored_words = askIgnoredWords()
+
     if not config["DEFAULT"].get("pinned_games"):
         pinned_games, gift_type, min_points = askConfig()
     else:
@@ -184,7 +206,7 @@ def run():
             pinned_games, gift_type, min_points = askConfig()
 
     print()
-    s = SG(cookie, gift_type, pinned_games, min_points)
+    s = SG(cookie, gift_type, pinned_games, min_points, ignored_words)
     s.start()
 
 
