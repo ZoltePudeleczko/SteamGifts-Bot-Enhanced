@@ -121,7 +121,6 @@ def run():
             message="Enter PHPSESSID cookie:",
         )
         config["DEFAULT"]["cookie"] = cookie["cookie"]
-        save_config()
         return cookie["cookie"]
 
     def askConfig():
@@ -145,7 +144,6 @@ def run():
             validate=PointValidator,
         )["min_points"]
         config["DEFAULT"]["min_points"] = min_points
-        save_config()
         return pinned_games, gift_type, min_points
 
     def askIgnoredWords():
@@ -155,7 +153,6 @@ def run():
             message="Enter words that you want to ignore (separated by comma):",
         )["ignored_words"]
         config["DEFAULT"]["ignored_words"] = ignored_words
-        save_config()
         return ignored_words.split(",")
 
     def pinned_games_to_string(pinned_games):
@@ -165,45 +162,32 @@ def run():
 
     if not config["DEFAULT"].get("cookie"):
         cookie = askCookie()
-    else:
-        current_cookie = config["DEFAULT"].get("cookie")
-        re_enter_cookie = ask(
-            type="confirm",
-            name="reenter",
-            message=f"Current cookie: {current_cookie}\nDo you want to enter new cookie?",
-        )["reenter"]
-        if re_enter_cookie:
-            cookie = askCookie()
-        else:
-            cookie = current_cookie
-
-    if not config["DEFAULT"].get("ignored_words"):
-        ignored_words = askIgnoredWords()
-    else:
-        ignored_words = config["DEFAULT"].get("ignored_words").split(",")
-
-        re_enter_ignored_words = ask(
-            type="confirm",
-            name="reenter",
-            message=f"Current ignored words: {ignored_words}\nDo you want to change this configuration?",
-        )["reenter"]
-        if re_enter_ignored_words:
-            ignored_words = askIgnoredWords()
+        save_config()
 
     if not config["DEFAULT"].get("pinned_games"):
         pinned_games, gift_type, min_points = askConfig()
-    else:
-        pinned_games = config["DEFAULT"].get("pinned_games")
-        gift_type = config["DEFAULT"].get("gift_type")
-        min_points = config["DEFAULT"].get("min_points")
+        save_config()
 
-        re_enter_config = ask(
-            type="confirm",
-            name="reenter",
-            message=f"Current configuration:\nPinned games: {pinned_games_to_string(pinned_games)}\nGift type: {gift_type}\nMinimum points: {min_points}\n\nDo you want to change this configuration?",
-        )["reenter"]
-        if re_enter_config:
-            pinned_games, gift_type, min_points = askConfig()
+    if not config["DEFAULT"].get("ignored_words"):
+        ignored_words = askIgnoredWords()
+        save_config()
+
+    cookie = config["DEFAULT"].get("cookie")
+    pinned_games = config["DEFAULT"].get("pinned_games")
+    gift_type = config["DEFAULT"].get("gift_type")
+    min_points = config["DEFAULT"].get("min_points")
+    ignored_words = config["DEFAULT"].get("ignored_words").split(",")
+
+    re_enter_config = ask(
+        type="confirm",
+        name="reenter",
+        message=f"Current configuration:\nCookie: {cookie}\nPinned games: {pinned_games_to_string(pinned_games)}\nGift type: {gift_type}\nMinimum points: {min_points}\nIgnored words: {ignored_words}\n\nDo you want to change this configuration?",
+    )["reenter"]
+    if re_enter_config:
+        cookie = askCookie()
+        pinned_games, gift_type, min_points = askConfig()
+        ignored_words = askIgnoredWords()
+        save_config()
 
     print()
     s = SG(cookie, gift_type, pinned_games, min_points, ignored_words)
