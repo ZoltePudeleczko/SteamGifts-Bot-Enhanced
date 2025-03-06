@@ -100,12 +100,10 @@ class SteamGifts:
             for item in soup.find_all("div", {"class": "giveaway__row-inner-wrap"})
             if "is-faded" not in item.get("class", [])
             and (len(item.get("class", [])) != 2 or self.pinned != 0)
-            and not any(
-                [
-                    word.lower()
-                    in item.find("a", {"class": "giveaway__heading__name"}).text.lower
-                    for word in self.ignored_words
-                ]
+            and all(
+                word.lower()
+                not in item.find("a", {"class": "giveaway__heading__name"}).text.lower()
+                for word in self.ignored_words
             )
         ]
 
