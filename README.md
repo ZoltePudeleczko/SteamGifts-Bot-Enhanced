@@ -21,6 +21,7 @@ The bot specially designed for [SteamGifts.com](https://www.steamgifts.com/) giv
   - `wishlist`, `group`, `recommended` etc.
 - Only enter giveaways until a certain point threshold
 - Enter or ignore pinned giveaways
+- Provide list of keywords to ignore
 
 ### Multiplatform
 
