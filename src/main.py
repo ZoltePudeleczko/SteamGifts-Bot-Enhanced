@@ -14,9 +14,9 @@ SLEEP_TIME_NO_POINTS = 900
 
 
 class SteamGifts:
-    def __init__(self, cookie, gifts_type, pinned, min_points, ignored_words):
+    def __init__(self, cookie, gift_type, pinned, min_points, ignored_words):
         self.cookie = {"PHPSESSID": cookie}
-        self.gifts_type = gifts_type
+        self.gift_type = gift_type
         self.pinned = pinned
         self.min_points = int(min_points)
         self.ignored_words = ignored_words
@@ -92,7 +92,7 @@ class SteamGifts:
             self.start()
 
     def get_games_list(self, page):
-        paginated_url = f"{self.base}/giveaways/{self.filter_url[self.gifts_type].format(page, self.points)}"
+        paginated_url = f"{self.base}/giveaways/{self.filter_url[self.gift_type].format(page, self.points)}"
         soup = self.get_soup_from_page(paginated_url)
 
         return [
