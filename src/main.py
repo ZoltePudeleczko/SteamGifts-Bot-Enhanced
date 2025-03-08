@@ -104,6 +104,7 @@ class SteamGifts:
                 word.lower()
                 not in item.find("a", {"class": "giveaway__heading__name"}).text.lower()
                 for word in self.ignored_words
+                if word != ""
             )
         ]
 
