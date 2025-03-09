@@ -133,7 +133,16 @@ def run():
             type="list",
             name="gift_type",
             message="Select type:",
-            choices=["All", "Wishlist", "Recommended", "Copies", "DLC", "Group", "New"],
+            choices=[
+                "Special Mode",
+                "All",
+                "Wishlist",
+                "Recommended",
+                "Copies",
+                "DLC",
+                "Group",
+                "New",
+            ],
         )["gift_type"]
         config["DEFAULT"]["gift_type"] = gift_type
 

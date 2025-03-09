@@ -12,6 +12,24 @@ SLEEP_TIME = 5
 SLEEP_TIME_NO_GAMES = 120
 SLEEP_TIME_NO_POINTS = 900
 
+FILTER_URLS = {
+    "Special Mode": "search?page={}&point_max={}",
+    "All": "search?page={}&point_max={}",
+    "Wishlist": "search?page={}&type=wishlist&point_max={}",
+    "Recommended": "search?page={}&type=recommended&point_max={}",
+    "Copies": "search?page={}&copy_min=2&point_max={}",
+    "DLC": "search?page={}&dlc=true&point_max={}",
+    "Group": "search?page={}&type=group&point_max={}",
+    "New": "search?page={}&type=new&point_max={}",
+}
+
+SPECIAL_MODE_URLS = {
+    "Free": "search?page={}&point_max=0&{}",
+    "Metascore90": "search?page={}&point_max={}&metascore_min=90",
+    "Metascore80": "search?page={}&point_max={}&metascore_min=80",
+    "Metascore70": "search?page={}&point_max={}&metascore_min=70",
+}
+
 
 class SteamGifts:
     def __init__(self, cookie, gift_type, pinned, min_points, ignored_words):
@@ -20,19 +38,12 @@ class SteamGifts:
         self.pinned = pinned
         self.min_points = int(min_points)
         self.ignored_words = ignored_words
+        self.special_mode_stage = 0
 
         self.base = "https://www.steamgifts.com"
         self.session = requests.Session()
 
-        self.filter_url = {
-            "All": "search?page={}&point_max={}",
-            "Wishlist": "search?page={}&type=wishlist&point_max={}",
-            "Recommended": "search?page={}&type=recommended&point_max={}",
-            "Copies": "search?page={}&copy_min=2&point_max={}",
-            "DLC": "search?page={}&dlc=true&point_max={}",
-            "Group": "search?page={}&type=group&point_max={}",
-            "New": "search?page={}&type=new&point_max={}",
-        }
+        self.filter_url = FILTER_URLS[self.gift_type]
 
     def requests_retry_session(self, retries=5, backoff_factor=0.3):
         session = self.session or requests.Session()
@@ -92,7 +103,9 @@ class SteamGifts:
             self.start()
 
     def get_games_list(self, page):
-        paginated_url = f"{self.base}/giveaways/{self.filter_url[self.gift_type].format(page, self.points)}"
+        paginated_url = (
+            f"{self.base}/giveaways/{self.filter_url.format(page, self.points)}"
+        )
         soup = self.get_soup_from_page(paginated_url)
 
         return [
@@ -146,6 +159,12 @@ class SteamGifts:
 
         if len(self.get_games_list(1)) > 0:
             self.get_game_content()
+        elif self.gift_type == "Special Mode":
+            log(
+                "🌸 [Special Mode] No more games to enter. Changing special mode stage...",
+                "yellow",
+            )
+            self.set_next_special_mode_stage()
         else:
             log("🛋️ No more games to enter. Sleeping for a while...", "yellow")
             sleep(SLEEP_TIME_NO_GAMES)
@@ -159,10 +178,45 @@ class SteamGifts:
         )
         return json.loads(entry.text)["type"] == "success"
 
+    def set_next_special_mode_stage(self):
+        if self.special_mode_stage == 0:
+            log(f"🌸 [Special Mode] Checking for free games...", "green")
+            self.filter_url = SPECIAL_MODE_URLS["Free"]
+        elif self.special_mode_stage == 1:
+            log(f"🌸 [Special Mode] Checking for wishlist games...", "green")
+            self.filter_url = FILTER_URLS["Wishlist"]
+        elif self.special_mode_stage == 2:
+            log(f"🌸 [Special Mode] Checking for recommended games...", "green")
+            self.filter_url = FILTER_URLS["Recommended"]
+        elif self.special_mode_stage == 3:
+            log(f"🌸 [Special Mode] Checking for games from groups...", "green")
+            self.filter_url = FILTER_URLS["Group"]
+        elif self.special_mode_stage == 4:
+            log(f"🌸 [Special Mode] Checking for Metascore 90+ games...", "green")
+            self.filter_url = SPECIAL_MODE_URLS["Metascore90"]
+        elif self.special_mode_stage == 5:
+            log(f"🌸 [Special Mode] Checking for Metascore 80+ games...", "green")
+            self.filter_url = SPECIAL_MODE_URLS["Metascore80"]
+        elif self.special_mode_stage == 6:
+            log(f"🌸 [Special Mode] Checking for Metascore 70+ games...", "green")
+            self.filter_url = SPECIAL_MODE_URLS["Metascore70"]
+        elif self.special_mode_stage == 7:
+            log(f"🌸 [Special Mode] Checking for new games...", "green")
+            self.filter_url = FILTER_URLS["All"]
+        else:
+            self.start()
+
+        self.special_mode_stage += 1
+        self.get_game_content()
+
     def start(self):
         self.update_info()
         self.sleep_if_not_enough_points()
+        self.special_mode_stage = 0
 
         log(f"🤖 Hoho! I am back! You have {self.points} points. Lets hack.", "blue")
 
-        self.get_game_content()
+        if self.gift_type == "Special Mode":
+            self.set_next_special_mode_stage()
+        else:
+            self.get_game_content()
