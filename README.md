@@ -15,6 +15,17 @@ The bot specially designed for [SteamGifts.com](https://www.steamgifts.com/) giv
 - Remembers configuration and cookie for future runs
 - Undetectable
 
+### 🆕 Special Mode 🆕
+
+Opinionated mode designed to be run 24/7.
+Just choose it and it will work in a loop:
+
+- enters Free giveaways
+- enters Wishlist giveaways
+- enters Recommended giveaways
+- enters Group giveaways
+- enter other giveaways starting with highest rated ones
+
 ### Easily configurable
 
 - Choose type of giveaways to enter
