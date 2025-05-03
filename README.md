@@ -17,14 +17,13 @@ The bot specially designed for [SteamGifts.com](https://www.steamgifts.com/) giv
 
 ### 🆕 Special Mode 🆕
 
-Opinionated mode designed to be run 24/7.
-Just choose it and it will work in a loop:
+A mode designed for continuous operation. Just select it, and it will loop through the following actions:
 
-- enters Free giveaways
-- enters Wishlist giveaways
-- enters Recommended giveaways
-- enters Group giveaways
-- enter other giveaways starting with highest rated ones
+- Enter free giveaways
+- Enter wishlist giveaways
+- Enter recommended giveaways
+- Enter group giveaways
+- Enter other giveaways, starting with the highest-rated ones
 
 ### Easily configurable
 
@@ -32,7 +31,7 @@ Just choose it and it will work in a loop:
   - `wishlist`, `group`, `recommended` etc.
 - Only enter giveaways until a certain point threshold
 - Enter or ignore pinned giveaways
-- Provide list of keywords to ignore
+- Provide a list of keywords to ignore
 
 ### Multiplatform
 
@@ -45,11 +44,11 @@ Fully supports macOS, Linux and Windows.
 3. Find `PHPSESSID` cookie in your browser
 4. Start the bot and follow instructions
 
-### Run from sources
+### Run from source
 
 Make sure you have [Python 3.9](https://www.python.org/downloads/) installed.
 
-Checkout the repository, install dependencies and run the bot:
+Clone the repository, install dependencies and run the bot:
 
 ```bash
 pip install -r requirements.txt
@@ -58,8 +57,8 @@ python src/cli.py
 
 ## What's next?
 
-Please leave your feedback and bugs in [`Issues`](https://github.com/ZoltePudeleczko/SteamGifts-Bot-Enhanced/issues) page.
+Please leave your feedback and report bugs on the [`Issues page`](https://github.com/ZoltePudeleczko/SteamGifts-Bot-Enhanced/issues).
 
 ## Original version
 
-Original version developed by [stilManiac](https://github.com/stilManiac) can be found [here](https://github.com/stilManiac/steamgifts-bot). Thanks for the great work!
+The original version, developed by [stilManiac](https://github.com/stilManiac), can be found [here](https://github.com/stilManiac/steamgifts-bot). Thanks for the great work!

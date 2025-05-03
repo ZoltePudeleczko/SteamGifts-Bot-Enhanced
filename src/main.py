@@ -1,6 +1,6 @@
 import requests
 import json
-
+import sys
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 from time import sleep
@@ -60,8 +60,7 @@ class SteamGifts:
         return session
 
     def get_soup_from_page(self, url):
-        r = self.requests_retry_session().get(url)
-        r = requests.get(url, cookies=self.cookie)
+        r = self.requests_retry_session().get(url, cookies=self.cookie)
         soup = BeautifulSoup(r.text, "html.parser")
         return soup
 
@@ -70,13 +69,11 @@ class SteamGifts:
 
         try:
             self.xsrf_token = soup.find("input", {"name": "xsrf_token"})["value"]
-            self.points = int(
-                soup.find("span", {"class": "nav__points"}).text
-            )  # storage points
+            self.points = int(soup.find("span", {"class": "nav__points"}).text)
         except TypeError:
             log("⛔ Cookie is not valid.", "red")
             sleep(SLEEP_TIME)
-            exit()
+            sys.exit()
 
     def get_game_info(self, item):
         game_cost = int(

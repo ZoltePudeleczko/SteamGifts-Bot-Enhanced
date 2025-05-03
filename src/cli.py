@@ -38,19 +38,19 @@ class PointValidator(Validator):
             value = int(value)
         except Exception:
             raise ValidationError(
-                message="Value should be greater than 0",
+                message="Value must be greater than 0",
                 cursor_position=len(document.text),
             )
 
         if value <= 0:
             raise ValidationError(
-                message="Value should be greater than 0",
+                message="Value must be greater than 0",
                 cursor_position=len(document.text),
             )
         return True
 
 
-def ask(type, name, message, validate=None, choices=[]):
+def ask(type, name, message, validate=None, choices=None):
     questions = [
         {
             "type": type,
@@ -108,7 +108,7 @@ def write_welcome_message():
 def save_config():
     with open("config.ini", "w") as configfile:
         config.write(configfile)
-        print("⚙️ Configuration saved.")
+        log("⚙️ Configuration saved.", "green")
 
 
 def run():
@@ -159,7 +159,7 @@ def run():
         ignored_words = ask(
             type="input",
             name="ignored_words",
-            message="Enter words that you want to ignore (separated by comma):",
+            message="Enter words you want to ignore (separated by commas):",
         )["ignored_words"]
         config["DEFAULT"]["ignored_words"] = ignored_words
         return ignored_words.split(",")
@@ -198,7 +198,7 @@ def run():
         ignored_words = askIgnoredWords()
         save_config()
 
-    print()
+    log("Bot is starting...", "blue")
     s = SG(cookie, gift_type, pinned_games, min_points, ignored_words)
     s.start()
 
