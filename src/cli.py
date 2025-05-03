@@ -1,27 +1,11 @@
 import configparser
+import questionary
 
 from pyfiglet import figlet_format
-from PyInquirer import (
-    Token,
-    ValidationError,
-    Validator,
-    prompt,
-    style_from_dict,
-)
 from termcolor import colored
-
 
 config = configparser.ConfigParser()
 config.read("config.ini")
-
-style = style_from_dict(
-    {
-        Token.QuestionMark: "#fac731 bold",
-        Token.Answer: "#4688f1 bold",
-        Token.Selected: "#0abf5b",  # default
-        Token.Pointer: "#673ab7 bold",
-    }
-)
 
 
 def log(string, color, font="slant", figlet=False):
@@ -31,42 +15,33 @@ def log(string, color, font="slant", figlet=False):
         print(colored(figlet_format(string, font=font), color))
 
 
-class PointValidator(Validator):
+class PointValidator:
     def validate(self, document):
         value = document.text
         try:
             value = int(value)
         except Exception:
-            raise ValidationError(
-                message="Value must be greater than 0",
-                cursor_position=len(document.text),
-            )
+            raise ValueError("Value must be greater than 0")
 
         if value <= 0:
-            raise ValidationError(
-                message="Value must be greater than 0",
-                cursor_position=len(document.text),
-            )
+            raise ValueError("Value must be greater than 0")
         return True
 
 
-def ask(type, name, message, validate=None, choices=None):
-    questions = [
-        {
-            "type": type,
-            "name": name,
-            "message": message,
-            "validate": validate,
-        },
-    ]
-    if choices:
-        questions[0].update(
-            {
-                "choices": choices,
-            }
-        )
-    answers = prompt(questions, style=style)
-    return answers
+def ask(type, name, message, validate=None, choices=None, default=None):
+    if type == "input":
+        answer = questionary.text(message, default=default or "").ask()
+        return {name: answer}
+    elif type == "confirm":
+        answer = questionary.confirm(
+            message, default=(default if default is not None else True)
+        ).ask()
+        return {name: answer}
+    elif type == "list":
+        answer = questionary.select(message, choices=choices, default=default).ask()
+        return {name: answer}
+    else:
+        raise ValueError(f"Unsupported question type: {type}")
 
 
 def link(uri, label=None):
@@ -114,25 +89,30 @@ def save_config():
 def run():
     from main import SteamGifts as SG
 
-    def askCookie():
+    def askCookie(default=None):
         cookie = ask(
             type="input",
             name="cookie",
-            message="Enter PHPSESSID cookie:",
+            message=f"Enter PHPSESSID cookie:",
+            default=default,
         )
-        config["DEFAULT"]["cookie"] = cookie["cookie"]
-        return cookie["cookie"]
+        value = cookie["cookie"] if cookie["cookie"] else default
+        config["DEFAULT"]["cookie"] = value
+        return value
 
-    def askConfig():
+    def askConfig(default_pinned=None, default_gift_type=None, default_min_points=None):
         pinned_games = ask(
-            type="confirm", name="pinned", message="Should bot enter pinned games?"
+            type="confirm",
+            name="pinned",
+            message=f"Should bot enter pinned games?",
+            default=(default_pinned == "1"),
         )["pinned"]
         config["DEFAULT"]["pinned_games"] = "1" if pinned_games else "0"
 
         gift_type = ask(
             type="list",
             name="gift_type",
-            message="Select type:",
+            message=f"Select type:",
             choices=[
                 "Special Mode",
                 "All",
@@ -143,26 +123,30 @@ def run():
                 "Group",
                 "New",
             ],
+            default=default_gift_type,
         )["gift_type"]
         config["DEFAULT"]["gift_type"] = gift_type
 
         min_points = ask(
             type="input",
             name="min_points",
-            message="Minimum points to start working (bot will try to enter giveaways until minimum value is reached):",
-            validate=PointValidator,
+            message=f"Minimum points to start working:",
+            default=default_min_points,
         )["min_points"]
+        min_points = min_points if min_points else default_min_points
         config["DEFAULT"]["min_points"] = min_points
         return pinned_games, gift_type, min_points
 
-    def askIgnoredWords():
+    def askIgnoredWords(default=None):
         ignored_words = ask(
             type="input",
             name="ignored_words",
-            message="Enter words you want to ignore (separated by commas):",
+            message=f"Enter words you want to ignore (comma separated):",
+            default=default,
         )["ignored_words"]
-        config["DEFAULT"]["ignored_words"] = ignored_words
-        return ignored_words.split(",")
+        value = ignored_words if ignored_words else default
+        config["DEFAULT"]["ignored_words"] = value
+        return value.split(",")
 
     def pinned_games_to_string(pinned_games):
         return "Enter" if pinned_games == "1" else "Ignore"
@@ -193,9 +177,13 @@ def run():
         message=f"Current configuration:\nCookie: {cookie}\nPinned games: {pinned_games_to_string(pinned_games)}\nGift type: {gift_type}\nMinimum points: {min_points}\nIgnored words: {ignored_words}\n\nDo you want to change this configuration?",
     )["reenter"]
     if re_enter_config:
-        cookie = askCookie()
-        pinned_games, gift_type, min_points = askConfig()
-        ignored_words = askIgnoredWords()
+        cookie = askCookie(default=cookie)
+        pinned_games, gift_type, min_points = askConfig(
+            default_pinned=pinned_games,
+            default_gift_type=gift_type,
+            default_min_points=min_points,
+        )
+        ignored_words = askIgnoredWords(default=",".join(ignored_words))
         save_config()
 
     log("Bot is starting...", "blue")
