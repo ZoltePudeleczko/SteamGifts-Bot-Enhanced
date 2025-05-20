@@ -93,7 +93,7 @@ class SteamGifts:
     def sleep_if_not_enough_points(self):
         if self.points < self.min_points:
             log(
-                f"🛋️ Sleeping to get more points. We have {self.points} points, but we need {self.min_points} to start.",
+                f"🛋️  Sleeping to get more points. We have {self.points} points, but we need {self.min_points} to start.",
                 "yellow",
             )
             sleep(SLEEP_TIME_NO_POINTS)
@@ -163,7 +163,7 @@ class SteamGifts:
             )
             self.set_next_special_mode_stage()
         else:
-            log("🛋️ No more games to enter. Sleeping for a while...", "yellow")
+            log("🛋️  No more games to enter. Sleeping for a while...", "yellow")
             sleep(SLEEP_TIME_NO_GAMES)
 
         self.start()
