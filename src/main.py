@@ -121,7 +121,7 @@ class SteamGifts:
     def get_game_content(self, page=1):
         n = page
         while True:
-            log(f"⚙️ Retrieving games from page {n}...", "magenta")
+            log(f"⚙️  Retrieving games from page {n}...", "magenta")
             games_list = self.get_games_list(page)
 
             if not len(games_list):
