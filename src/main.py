@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 from cli import log
 
 SLEEP_TIME = 5
+SLEEP_TIME_TO_AVOID_TOO_MANY_REQUEST_ERRORS = 60
 SLEEP_TIME_NO_GAMES = 120
 SLEEP_TIME_NO_POINTS = 900
 
@@ -201,6 +202,8 @@ class SteamGifts:
             log(f"🌸 [Special Mode] Checking for new games...", "green")
             self.filter_url = FILTER_URLS["All"]
         else:
+            log(f"🌸 [Special Mode] Waiting to avoid being blocked...", "green")
+            time.sleep(SLEEP_TIME_TO_AVOID_TOO_MANY_REQUEST_ERROR)
             self.start()
 
         self.special_mode_stage += 1
