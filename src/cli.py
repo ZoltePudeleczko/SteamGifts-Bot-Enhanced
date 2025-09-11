@@ -83,7 +83,7 @@ def write_welcome_message():
 def save_config():
     with open("config.ini", "w") as configfile:
         config.write(configfile)
-        log("⚙️ Configuration saved.", "green")
+        log("⚙️  Configuration saved.", "green")
 
 
 def run():

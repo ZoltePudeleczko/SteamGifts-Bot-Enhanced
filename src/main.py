@@ -6,7 +6,12 @@ from urllib3.util import Retry
 from time import sleep
 from bs4 import BeautifulSoup
 
-from cli import log
+from cli import log, ask, config, save_config
+
+
+class InvalidCookieError(Exception):
+    """Exception raised when the PHPSESSID cookie is invalid."""
+    pass
 
 SLEEP_TIME = 5
 SLEEP_TIME_NO_GAMES = 120
@@ -64,6 +69,16 @@ class SteamGifts:
         soup = BeautifulSoup(r.text, "html.parser")
         return soup
 
+    def update_cookie(self, new_cookie):
+        """Update the cookie with a new value and save to config."""
+        self.cookie = {"PHPSESSID": new_cookie}
+        # Reset the session to clear any cached auth state
+        self.session = requests.Session()
+        # Save the new cookie to config
+        config["DEFAULT"]["cookie"] = new_cookie
+        save_config()
+        log("🔄 Cookie updated, session reset, and saved to config. Trying again...", "yellow")
+
     def update_info(self):
         soup = self.get_soup_from_page(self.base)
 
@@ -72,8 +87,7 @@ class SteamGifts:
             self.points = int(soup.find("span", {"class": "nav__points"}).text)
         except TypeError:
             log("⛔ Cookie is not valid.", "red")
-            sleep(SLEEP_TIME)
-            sys.exit()
+            raise InvalidCookieError("Cookie is not valid")
 
     def get_game_info(self, item):
         game_cost = int(
@@ -207,7 +221,24 @@ class SteamGifts:
         self.get_game_content()
 
     def start(self):
-        self.update_info()
+        while True:
+            try:
+                self.update_info()
+                break  # If successful, break out of the loop
+            except InvalidCookieError:
+                new_cookie = ask(
+                    type="input",
+                    name="cookie",
+                    message="Please enter a new PHPSESSID cookie:",
+                    default=""
+                )["cookie"]
+                
+                if not new_cookie.strip():
+                    log("⛔ No cookie provided. Exiting.", "red")
+                    sys.exit()
+                
+                self.update_cookie(new_cookie)
+        
         self.sleep_if_not_enough_points()
         self.special_mode_stage = 0
 
